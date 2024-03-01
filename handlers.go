@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"hcpb-api/db"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,29 +13,20 @@ func insertCallHandler(c *gin.Context) {
 	c.BindJSON(&call)
 
 	fmt.Println(call)
+	/*
 	num_calls, err := db.CountCallsByChatID(call.ChatID)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error": err.Error(),
-		})
+		log.Println(err)
+		c.JSON(500, nil)
 		return
 	}
 	fmt.Println(num_calls)
-	if num_calls > 500 {
-		c.JSON(400, gin.H{
-			"error": "Too many calls",
-		})
-		return
-	}
-
-	err = db.InsertCall(call)
+	*/
+	err := db.InsertCall(call)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error": err.Error(),
-		})
+		log.Println(err)
+		c.JSON(500, nil)
 	} else {
-		c.JSON(201, gin.H{
-			"message": "Call inserted",
-		})
+		c.JSON(201, nil)
 	}
 }
