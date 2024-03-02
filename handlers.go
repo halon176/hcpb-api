@@ -30,3 +30,13 @@ func insertCallHandler(c *gin.Context) {
 		c.JSON(201, nil)
 	}
 }
+
+func getLastCallsHandler(c *gin.Context) {
+	calls, err := db.QueryLastCalls()
+	if err != nil {
+		log.Println(err)
+		c.JSON(500, nil)
+		return
+	}
+	c.JSON(200, calls)
+}

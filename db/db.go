@@ -55,3 +55,20 @@ func CountCallsByChatID(chatID string) (int64, error) {
 	}
 	return count, nil
 }
+
+func QueryLastCalls() ([]CallInfo, error) {
+    var calls []CallInfo
+    result := DB.Table("calls").
+        Select("services.name AS service_name, types.name AS type_name, calls.chat_id, calls.coin, calls.created_at").
+        Joins("JOIN services ON calls.service_id = services.id").
+        Joins("JOIN types ON calls.type_id = types.id").
+        Order("calls.created_at desc").
+        Limit(200).
+        Scan(&calls)
+    if result.Error != nil {
+        log.Println(result.Error)
+        return calls, result.Error
+    }
+    return calls, nil
+}
+

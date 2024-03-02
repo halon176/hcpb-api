@@ -14,3 +14,21 @@ type Call struct {
 	Coin      string    `json:"coin"`
 	CreatedAt time.Time `json:"created_at" gorm:"default:NOW"`
 }
+
+type Service struct {
+	ID   uint   `json:"id" gorm:"primary_key"`
+	Name string `json:"name"`
+}
+
+type Type struct {
+	ID   uint   `json:"id" gorm:"primary_key"`
+	Name string `json:"name"`
+}
+
+type CallInfo struct {
+    ServiceName string    `json:"service_name"`
+    TypeName    string    `json:"type_name"`
+    ChatID      string    `json:"chat_id"`
+    Coin        string    `json:"coin"`
+    CreatedAt   time.Time `json:"created_at"`
+}
