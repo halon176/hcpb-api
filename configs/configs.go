@@ -12,6 +12,8 @@ var (
 	DB_NAME string
 	DB_HOST string
 	DB_PORT string
+
+	API_KEY string
 )
 
 func init() {
@@ -22,5 +24,7 @@ func init() {
 	DB_NAME = os.Getenv("DB_NAME")
 	DB_HOST = os.Getenv("DB_HOST")
 	DB_PORT = os.Getenv("DB_PORT")
+
+	API_KEY = os.Getenv("API_KEY")
 
 }

@@ -1,74 +1,55 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
+	"hcpb-api/configs"
+	"hcpb-api/models"
 	"log"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
-	"hcpb-api/configs"
+	_ "github.com/lib/pq"
 )
 
-// DB is the database connection
-var DB *gorm.DB
+var db *sql.DB
 
-// Init is the function to initialize the database connection
-func Init() {
+func Main() {
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Rome",
+	configs.DB_HOST, configs.DB_USER, configs.DB_PASS, configs.DB_NAME, configs.DB_PORT)
 	var err error
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Europe/Rome",
-		configs.DB_HOST, configs.DB_USER, configs.DB_PASS, configs.DB_NAME, configs.DB_PORT)
-
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 }
 
-func QueryAllCalls() ([]Call, error) {
-	var calls []Call
-	result := DB.Find(&calls)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return calls, result.Error
-	}
-	return calls, nil
+func GetLastCallsDriver() (string, error) {
+    var jsonString string
+    err := db.QueryRow(`SELECT json_agg(c) FROM (SELECT services.name as service_name, types.name as type_name, calls.chat_id, calls.coin, calls.created_at FROM calls JOIN services ON calls.service_id = services.id JOIN types ON calls.type_id = types.id ORDER BY calls.created_at DESC LIMIT 10) c`).Scan(&jsonString)
+    if err != nil {
+        log.Println(err)
+        return "", err
+    }
+    return jsonString, nil
 }
 
-func InsertCall(call Call) error {
-	result := DB.Create(&call)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return result.Error
+func GetStatistics() (string, error) {
+	var jsonString string
+	err := db.QueryRow(`SELECT json_agg(c) from (SELECT * from get_statistics()) c`).Scan(&jsonString)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	return jsonString, nil
+}
+
+func InsertCall(call models.Call) error {
+	_, err := db.Exec(`INSERT INTO calls (service_id, type_id, chat_id, coin) VALUES ($1, $2, $3, $4)`, call.ServiceID, call.TypeID, call.ChatID, call.Coin)
+	if err != nil {
+		log.Println(err)
+		return err
 	}
 	return nil
 }
 
-// scrivo una query che conta tutte le chiamate effettuate da un chat_id nel mese corrente
-func CountCallsByChatID(chatID string) (int64, error) {
-	var count int64
-	result := DB.Model(&Call{}).Where("chat_id = ? AND date_trunc('month', created_at) = date_trunc('month', now())", chatID).Count(&count)
-	if result.Error != nil {
-		log.Println(result.Error)
-		return count, result.Error
-	}
-	return count, nil
-}
-
-func QueryLastCalls() ([]CallInfo, error) {
-    var calls []CallInfo
-    result := DB.Table("calls").
-        Select("services.name AS service_name, types.name AS type_name, calls.chat_id, calls.coin, calls.created_at").
-        Joins("JOIN services ON calls.service_id = services.id").
-        Joins("JOIN types ON calls.type_id = types.id").
-        Order("calls.created_at desc").
-        Limit(200).
-        Scan(&calls)
-    if result.Error != nil {
-        log.Println(result.Error)
-        return calls, result.Error
-    }
-    return calls, nil
-}
 

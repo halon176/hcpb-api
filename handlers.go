@@ -1,42 +1,62 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"hcpb-api/db"
-	"log"
+	"hcpb-api/models"
 
-	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
 )
 
-func insertCallHandler(c *gin.Context) {
-	var call db.Call
-	c.BindJSON(&call)
 
-	fmt.Println(call)
-	/*
-	num_calls, err := db.CountCallsByChatID(call.ChatID)
-	if err != nil {
-		log.Println(err)
-		c.JSON(500, nil)
-		return
-	}
-	fmt.Println(num_calls)
-	*/
-	err := db.InsertCall(call)
-	if err != nil {
-		log.Println(err)
-		c.JSON(500, nil)
-	} else {
-		c.JSON(201, nil)
-	}
+
+func getLastCallsHandlerNew(w http.ResponseWriter, r *http.Request) {
+    jsonString, err := db.GetLastCallsDriver()
+    if err != nil {
+        log.Println(err)
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
+
+    // Scrivi il JSON sulla risposta HTTP
+    w.Header().Set("Content-Type", "application/json")
+    w.Write([]byte(jsonString))
 }
 
-func getLastCallsHandler(c *gin.Context) {
-	calls, err := db.QueryLastCalls()
+func getStatisticsHandler(w http.ResponseWriter, r *http.Request) {
+	jsonString, err := db.GetStatistics()
 	if err != nil {
 		log.Println(err)
-		c.JSON(500, nil)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(200, calls)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(jsonString))
+
+
 }
+
+func insertCallHandlerDriver(w http.ResponseWriter, r *http.Request) {
+	var call models.Call
+	err := json.NewDecoder(r.Body).Decode(&call)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = db.InsertCall(call)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+
+}	
+
+
+
