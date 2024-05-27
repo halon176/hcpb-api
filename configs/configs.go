@@ -1,7 +1,9 @@
 package configs
 
 import (
+	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -14,6 +16,9 @@ var (
 	DB_PORT string
 
 	API_KEY string
+
+	LOG_LEVEL    string = "info"
+	SERVICE_PORT string
 )
 
 func init() {
@@ -26,5 +31,25 @@ func init() {
 	DB_PORT = os.Getenv("DB_PORT")
 
 	API_KEY = os.Getenv("API_KEY")
+	SERVICE_PORT = os.Getenv("SERVICE_PORT")
+	if SERVICE_PORT == "" {
+		SERVICE_PORT = "7777"
+	}
+
+	LOG_LEVEL = os.Getenv("LOG_LEVEL")
+
+	if LOG_LEVEL == "" {
+		LOG_LEVEL = "debug"
+	}
+	LOG_LEVEL = strings.ToLower(LOG_LEVEL)
+
+	switch LOG_LEVEL {
+	case "debug", "info", "warn", "error":
+		break
+	default:
+		log.Fatalf("LOG_LEVEL %s non valido, i valori ammessi sono: debug, info, warn, error", LOG_LEVEL)
+	}
+
+	initLogger(LOG_LEVEL)
 
 }
