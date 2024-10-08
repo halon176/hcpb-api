@@ -55,3 +55,39 @@ func insertCallHandlerDriver(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 }
+
+func getExcludedHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	jsonString, err := control.GetExcluded(ctx)
+	if err != nil {
+		slog.Error("Error getting excluded", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	writeJson(w, http.StatusOK, jsonString)
+
+}
+
+func insertExcludedHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	item := r.PathValue("item")
+	err := control.InsertExcluded(ctx, item)
+	if err != nil {
+		slog.Error("Error inserting excluded", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func deleteExcludedHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	item := r.PathValue("item")
+	err := control.DeleteExcluded(ctx, item)
+	if err != nil {
+		slog.Error("Error deleting excluded", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
