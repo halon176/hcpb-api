@@ -11,6 +11,9 @@ func Init() {
 	r.HandleFunc("POST /call", insertCallHandlerDriver)
 	r.HandleFunc("GET /calls", getLastCallsHandlerNew)
 	r.HandleFunc("GET /statistics", getStatisticsHandler)
+	r.HandleFunc("GET /excluded", getExcludedHandler)
+	r.HandleFunc("POST /excluded/{item}", insertExcludedHandler)
+	r.HandleFunc("DELETE /excluded/{item}", deleteExcludedHandler)
 
 	server := http.Server{
 		Addr:    ":" + configs.SERVICE_PORT,

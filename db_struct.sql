@@ -68,3 +68,17 @@ BEGIN
 END;
 $function$
 ;
+
+
+-- public.excluded definition
+
+-- Drop table
+
+-- DROP TABLE public.excluded;
+
+CREATE TABLE public.excluded (
+	id serial4 NOT NULL,
+	item text NOT NULL,
+	CONSTRAINT excluded_pk PRIMARY KEY (id)
+);
+CREATE INDEX excluded_item_idx ON public.excluded (item);
