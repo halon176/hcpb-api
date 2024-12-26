@@ -82,3 +82,23 @@ CREATE TABLE public.excluded (
 	CONSTRAINT excluded_pk PRIMARY KEY (id)
 );
 CREATE INDEX excluded_item_idx ON public.excluded (item);
+
+-- DROP FUNCTION public.get_call_statistics();
+
+CREATE OR REPLACE FUNCTION public.get_call_statistics()
+ RETURNS TABLE(chat_id text, call_count bigint, latest_call_date timestamp without time zone)
+ LANGUAGE plpgsql
+ STABLE COST 500
+AS $function$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        calls.chat_id, 
+        COUNT(*) AS call_count, 
+        MAX(calls.created_at)::timestamp AS latest_call_date
+    FROM calls
+    GROUP BY calls.chat_id
+    ORDER BY call_count DESC;
+END;
+$function$
+;
