@@ -8,7 +8,7 @@ import (
 func Init() {
 	r := http.NewServeMux()
 
-	r.HandleFunc("POST /call", insertCallHandlerDriver)
+	r.HandleFunc("POST /calls", insertCallHandlerDriver)
 	r.HandleFunc("GET /calls", getLastCallsHandlerNew)
 	r.HandleFunc("GET /statistics", getStatisticsHandler)
 	r.HandleFunc("GET /excluded", getExcludedHandler)
