@@ -1,0 +1,21 @@
+FROM golang:1.23.5 AS builder
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN apt-get update && apt-get install -y make && make build
+
+FROM debian:bookworm-slim
+
+LABEL org.opencontainers.image.source="https://github.com/halon176/hcpb-api"
+
+WORKDIR /app
+
+COPY --from=builder /app/bin/hcpb-api /app/hcpb-api
+
+RUN chmod +x /app/hcpb-api
+
+CMD ["/app/hcpb-api"]
