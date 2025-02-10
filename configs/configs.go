@@ -47,7 +47,7 @@ func init() {
 	case "debug", "info", "warn", "error":
 		break
 	default:
-		log.Fatalf("LOG_LEVEL %s non valido, i valori ammessi sono: debug, info, warn, error", LOG_LEVEL)
+		log.Fatalf("LOG_LEVEL %s is not valid", LOG_LEVEL)
 	}
 
 	initLogger(LOG_LEVEL)
