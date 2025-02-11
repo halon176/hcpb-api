@@ -8,6 +8,7 @@ import (
 
 func main() {
 	ctx := context.Background()
+	controllers.Migrate(ctx)
 	controllers.Init(ctx)
 	api.Init()
 

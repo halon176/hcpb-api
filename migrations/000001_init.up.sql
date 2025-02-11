@@ -1,36 +1,16 @@
--- public.services definition
-
--- Drop table
-
--- DROP TABLE public.services;
-
-CREATE TABLE public.services (
+CREATE TABLE IF NOT EXISTS public.services (
 	id int2 NOT NULL,
 	"name" text NOT NULL,
 	CONSTRAINT services_pk PRIMARY KEY (id)
 );
 
-
--- public."types" definition
-
--- Drop table
-
--- DROP TABLE public."types";
-
-CREATE TABLE public."types" (
+CREATE TABLE IF NOT EXISTS public."types" (
 	id int2 NOT NULL,
 	"name" text NOT NULL,
 	CONSTRAINT types_pk PRIMARY KEY (id)
 );
 
-
--- public.calls definition
-
--- Drop table
-
--- DROP TABLE public.calls;
-
-CREATE TABLE public.calls (
+CREATE TABLE IF NOT EXISTS public.calls (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
 	service_id int2 NOT NULL,
 	type_id int2 NOT NULL,
@@ -41,9 +21,15 @@ CREATE TABLE public.calls (
 	CONSTRAINT calls_services_fk FOREIGN KEY (service_id) REFERENCES public.services(id),
 	CONSTRAINT calls_types_fk FOREIGN KEY (type_id) REFERENCES public."types"(id)
 );
-CREATE INDEX calls_created_at_idx ON public.calls USING btree (created_at);
 
--- DROP FUNCTION public.get_statistics();
+CREATE INDEX IF NOT EXISTS calls_created_at_idx ON public.calls USING btree (created_at);
+
+CREATE TABLE IF NOT EXISTS public.excluded (
+	id serial4 NOT NULL,
+	item text NOT NULL,
+	CONSTRAINT excluded_pk PRIMARY KEY (id)
+);
+CREATE INDEX excluded_item_idx ON public.excluded (item);
 
 CREATE OR REPLACE FUNCTION public.get_statistics()
  RETURNS TABLE(distinct_callers integer, daily_calls integer, weekly_calls integer, monthly_calls integer, yearly_calls integer, total_calls integer)
@@ -70,35 +56,10 @@ $function$
 ;
 
 
--- public.excluded definition
+INSERT INTO public.types (id, name) VALUES (1, 'Price');
+INSERT INTO public.types (id, name) VALUES (2, 'Chart');
 
--- Drop table
+INSERT INTO public.services (id, name) VALUES (1, 'CoinGecko');
+INSERT INTO public.services (id, name) VALUES (2, 'CoinMarketCap');
 
--- DROP TABLE public.excluded;
 
-CREATE TABLE public.excluded (
-	id serial4 NOT NULL,
-	item text NOT NULL,
-	CONSTRAINT excluded_pk PRIMARY KEY (id)
-);
-CREATE INDEX excluded_item_idx ON public.excluded (item);
-
--- DROP FUNCTION public.get_call_statistics();
-
-CREATE OR REPLACE FUNCTION public.get_call_statistics()
- RETURNS TABLE(chat_id text, call_count bigint, latest_call_date timestamp without time zone)
- LANGUAGE plpgsql
- STABLE COST 500
-AS $function$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        calls.chat_id, 
-        COUNT(*) AS call_count, 
-        MAX(calls.created_at)::timestamp AS latest_call_date
-    FROM calls
-    GROUP BY calls.chat_id
-    ORDER BY call_count DESC;
-END;
-$function$
-;
