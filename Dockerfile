@@ -15,6 +15,7 @@ LABEL org.opencontainers.image.source="https://github.com/halon176/hcpb-api"
 WORKDIR /app
 
 COPY --from=builder /app/bin/hcpb-api /app/hcpb-api
+COPY --from=builder /app/migrations /app/migrations
 
 RUN chmod +x /app/hcpb-api
 
