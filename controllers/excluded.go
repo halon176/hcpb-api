@@ -14,6 +14,10 @@ func GetExcluded(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 
+	if string(jsonData) == "" {
+		jsonData = []byte("[]")
+	}
+
 	return jsonData, nil
 }
 
