@@ -9,3 +9,10 @@ The aim is to maintain this API as efficiently as possible to minimize the laten
 ## Security
 
 The API uses an API key named `X-API-KEY` to authenticate requests. This key is specified in the `.env` file and protects all routes.
+
+## Observability
+
+Set `LOGFIRE_TOKEN` to enable OpenTelemetry export to Logfire.
+With telemetry enabled, the API sends:
+- traces (request spans)
+- HTTP server metrics from `otelhttp` (request count/duration/size)
