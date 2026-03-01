@@ -21,7 +21,11 @@ func Migrate(ctx context.Context) {
 		slog.Error("Failed to connect to the database", "error", err)
 		return
 	}
-	defer dbConn.Close()
+	defer func() {
+		if err := dbConn.Close(); err != nil {
+			slog.Error("Failed to close migration DB connection", "error", err)
+		}
+	}()
 
 	// Initialize migrations
 	migrationsPath := "file://migrations"

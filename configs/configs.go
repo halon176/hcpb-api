@@ -27,6 +27,8 @@ var (
 
 	LOG_LEVEL    string = "info"
 	SERVICE_PORT string
+
+	LOGFIRE_TOKEN string
 )
 
 func GetEnvInt32(key string, defaultVal int32) int32 {
@@ -48,7 +50,9 @@ func GetEnvDurationMinutes(key string, defaultVal time.Duration) time.Duration {
 }
 
 func init() {
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
 
 	DB_USER = os.Getenv("DB_USER")
 	DB_PASS = os.Getenv("DB_PASS")
@@ -64,6 +68,7 @@ func init() {
 	DB_HEALTH_CHECK_PERIOD = GetEnvDurationMinutes("DB_HEALTH_CHECK_PERIOD", 1*time.Minute)
 
 	API_KEY = os.Getenv("API_KEY")
+	LOGFIRE_TOKEN = os.Getenv("LOGFIRE_TOKEN")
 	SERVICE_PORT = os.Getenv("SERVICE_PORT")
 	if SERVICE_PORT == "" {
 		SERVICE_PORT = "7777"
