@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	control "hcpb-api/controllers"
 	s "hcpb-api/schemas"
 	"log/slog"
@@ -140,6 +141,10 @@ func insertExcludedHandler(w http.ResponseWriter, r *http.Request) {
 	item := r.PathValue("item")
 	err := control.InsertExcluded(ctx, item)
 	if err != nil {
+		if errors.Is(err, control.ErrDuplicateExcluded) {
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
 		slog.Error("Error inserting excluded", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
