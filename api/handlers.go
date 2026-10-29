@@ -109,12 +109,16 @@ func insertCallHandlerDriver(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&call)
 	if err != nil {
 		slog.Error("Error decoding request body", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	err = control.InsertCall(ctx, call)
 	if err != nil {
+		if errors.Is(err, control.ErrRateLimited) {
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
 		slog.Error("Error inserting call", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
