@@ -68,6 +68,9 @@ func init() {
 	DB_HEALTH_CHECK_PERIOD = GetEnvDurationMinutes("DB_HEALTH_CHECK_PERIOD", 1*time.Minute)
 
 	API_KEY = os.Getenv("API_KEY")
+	if API_KEY == "" {
+		log.Fatal("API_KEY is not set")
+	}
 	LOGFIRE_TOKEN = os.Getenv("LOGFIRE_TOKEN")
 	SERVICE_PORT = os.Getenv("SERVICE_PORT")
 	if SERVICE_PORT == "" {

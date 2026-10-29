@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/subtle"
 	"hcpb-api/configs"
 	"log"
 	"net/http"
@@ -58,8 +59,7 @@ func Logging(next http.Handler) http.Handler {
 func checkAPIKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		apiKey := r.Header.Get("X-API-KEY")
-		expectedKey := configs.API_KEY
-		if apiKey != expectedKey {
+		if subtle.ConstantTimeCompare([]byte(apiKey), []byte(configs.API_KEY)) != 1 {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

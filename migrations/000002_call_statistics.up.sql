@@ -22,4 +22,4 @@ $function$
 
 ALTER TABLE public.excluded ADD CONSTRAINT excluded_item_unique UNIQUE (item);
 
-SELECT setval('excluded_id_seq', COALESCE((SELECT MAX(id) FROM excluded), 0));
+SELECT setval('excluded_id_seq', COALESCE((SELECT MAX(id) FROM excluded), 1), (SELECT MAX(id) FROM excluded) IS NOT NULL);

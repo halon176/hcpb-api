@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	s "hcpb-api/schemas"
 	"log/slog"
@@ -11,6 +12,10 @@ import (
 )
 
 var tracer = otel.Tracer("hcpb-api/controllers")
+
+const maxCallsPerHour = 30
+
+var ErrRateLimited = errors.New("too many calls in the last hour")
 
 func GetLastCalls(ctx context.Context) (data []byte, err error) {
 	ctx, span := tracer.Start(ctx, "db.GetLastCalls")
@@ -88,6 +93,18 @@ func InsertCall(ctx context.Context, call s.Call) error {
 		attribute.Int("call.type_id", call.TypeID),
 		attribute.String("call.coin", call.Coin),
 	)
+
+	var lastHour int
+	countStmt := `SELECT COUNT(*) FROM calls WHERE chat_id = $1 AND created_at > now() - interval '1 hour'`
+	if err := session.QueryRow(ctx, countStmt, call.ChatID).Scan(&lastHour); err != nil {
+		span.RecordError(err)
+		slog.Error("Error counting calls", "error", err)
+		return err
+	}
+	if lastHour >= maxCallsPerHour {
+		span.SetAttributes(attribute.Bool("call.rate_limited", true))
+		return ErrRateLimited
+	}
 
 	stmt := `
 	INSERT INTO calls (service_id, type_id, chat_id, coin) VALUES ($1, $2, $3, $4)
